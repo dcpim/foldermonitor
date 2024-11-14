@@ -1,9 +1,22 @@
-# foldermonitor
+# Folder Monitor
 
-Folder Monitor is a simple Windows application that monitors a folder for files matching a specific wildcard every 5 seconds, then moves those files to another folder. Configuration is found in the INI file of the same name.
+## Description
+
+Folder Monitor is a simple Windows application that monitors a folder for files matching a specific wildcard every 5 seconds, then copies moves those files to another folder. Configuration is found in the INI file of the same name.
 
 
-# Copyright
+## Configuration
+
+The INI file should be in the same location as the binary and should have the following entries:
+
+* SourceFolder - The name of the folder to monitor.
+* DestinationFolder - The name of the folder where files should be moved or copied to.
+* Wildcard - The type of files to act on.
+* Overwrite - Whether to overwrite target files or stop executing if not.
+* Debug - Whether to show a summary console window.
+
+
+## Copyright
 
 Copyright 2024 Patrick Lambert - https://dendory.net
 
