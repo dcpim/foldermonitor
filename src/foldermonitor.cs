@@ -22,25 +22,29 @@ namespace FolderMonitor
 {
 	public class Program
 	{
-			// Import DLL modules
-			[DllImport("kernel32.dll")]
-			static extern IntPtr GetConsoleWindow();
-			[DllImport("user32.dll")]
-			static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
-			[DllImport("kernel32", CharSet = CharSet.Unicode)]
-			static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
+		// Import DLL modules
+		[DllImport("kernel32.dll")]
+		static extern IntPtr GetConsoleWindow();
+		[DllImport("user32.dll")]
+		static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+		[DllImport("kernel32", CharSet = CharSet.Unicode)]
+		static extern int GetPrivateProfileString(string Section, string Key, string Default, StringBuilder RetVal, int Size, string FilePath);
+
 		static void Main(string[] args)
 		{
 
 			// Variables
 			string prgfile = Assembly.GetExecutingAssembly().GetName().Name;
 			string inifile = new FileInfo(prgfile + ".ini").FullName;
+			string logfile = new FileInfo(prgfile + ".log").FullName;
 			var src = new StringBuilder(255);
 			var dst = new StringBuilder(255);
 			var wildc = new StringBuilder(255);
 			var debug = new StringBuilder(255);
 			var act = new StringBuilder(255);
 			var overw = new StringBuilder(255);
+			var eoe = new StringBuilder(255);
+			var log = new StringBuilder(255);
 
 			// Read INI file
 			GetPrivateProfileString(prgfile, "SourceFolder", "", src, 255, inifile);
@@ -49,6 +53,8 @@ namespace FolderMonitor
 			GetPrivateProfileString(prgfile, "Debug", "", debug, 255, inifile);
 			GetPrivateProfileString(prgfile, "Action", "", act, 255, inifile);
 			GetPrivateProfileString(prgfile, "Overwrite", "", overw, 255, inifile);
+			GetPrivateProfileString(prgfile, "Log", "", log, 255, inifile);
+			GetPrivateProfileString(prgfile, "ExitOnError", "", eoe, 255, inifile);
 
 			// Hide window if not in debug mode
 			if(debug.ToString().ToLower() != "true")
@@ -69,24 +75,47 @@ namespace FolderMonitor
 				FileInfo[] Files = d.GetFiles(wildc.ToString());
 				foreach(FileInfo file in Files) // List all files in SourceFolder matching Wildcard
 				{
-					string srcfile = src.ToString() + "\\" + file.Name;
-					string dstfile = dst.ToString() + "\\" + file.Name;
-					if(overw.ToString().ToLower() == "true")
+					try
 					{
-						if(File.Exists(dstfile)) // Erase destination if Overwrite is set to true and file exists
+						string srcfile = src.ToString() + "\\" + file.Name;
+						string dstfile = dst.ToString() + "\\" + file.Name;
+						if(overw.ToString().ToLower() == "true")
 						{
-							File.Delete(dstfile);
+							if(File.Exists(dstfile)) // Erase destination if Overwrite is set to true and file exists
+							{
+								File.Delete(dstfile);
+							}
+						}
+						if(act.ToString().ToLower() != "move") // Copy file to destination
+						{
+							Console.WriteLine("* Copying file " + srcfile + " to " + dstfile);
+							if(log.ToString().ToLower() == "true")
+							{
+								File.AppendAllText(logfile, "Copy: " + srcfile + " => " + dstfile + Environment.NewLine);
+							}
+							File.Copy(srcfile, dstfile);
+						}
+						else // Move file to destination
+						{
+							Console.WriteLine("* Moving file " + srcfile + " to " + dstfile);
+							if(log.ToString().ToLower() == "true")
+							{
+								File.AppendAllText(logfile, "Move: " + srcfile + " => " + dstfile + Environment.NewLine);
+							}
+							File.Move(srcfile, dstfile);
 						}
 					}
-					if(act.ToString().ToLower() != "move") // Copy file to destination
+					catch(Exception ex)
 					{
-						Console.WriteLine("* Copying file " + srcfile + " to " + dstfile);
-						File.Copy(srcfile, dstfile);
-					}
-					else // Move file to destination
-					{
-						Console.WriteLine("* Moving file " + srcfile + " to " + dstfile);
-						File.Move(srcfile, dstfile);
+						Console.WriteLine("Error: " + ex.Message);
+						if(log.ToString().ToLower() == "true")
+						{
+							File.AppendAllText(logfile, "Error: " + ex.Message + Environment.NewLine);
+						}
+						if(eoe.ToString().ToLower() == "true")
+						{
+							Environment.Exit(1);
+						}
 					}
 				}
 				System.Threading.Thread.Sleep(5000);

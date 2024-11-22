@@ -14,6 +14,8 @@ The INI file should be in the same location as the binary and should have the fo
 * Wildcard - The type of files to act on.
 * Overwrite - Whether to overwrite target files or stop executing if not.
 * Debug - Whether to show a summary console window.
+* Log - Log activity in the foldermonitor.log file.
+* ExitOnError - Exit the application if an error occurs.
 
 
 ## Copyright
