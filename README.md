@@ -16,6 +16,9 @@ The INI file should be in the same location as the binary and should have the fo
 * Debug - Whether to show a summary console window.
 * Log - Log activity in the foldermonitor.log file.
 * ExitOnError - Exit the application if an error occurs.
+* WaitTime - The amount of ms to wait between checks.
+
+Run the startup.bat file to add this app to Windows startup.
 
 
 ## Copyright

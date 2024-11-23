@@ -32,11 +32,15 @@ namespace FolderMonitor
 
 		static void Main(string[] args)
 		{
+			Console.WriteLine("Folder Monitor - (C) 2024 Patrick Lambert - https://dendory.net");
+			Console.WriteLine("Provided as free software under the MIT license.");
+			Console.WriteLine("");
 
 			// Variables
+			string prgfolder = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 			string prgfile = Assembly.GetExecutingAssembly().GetName().Name;
-			string inifile = new FileInfo(prgfile + ".ini").FullName;
-			string logfile = new FileInfo(prgfile + ".log").FullName;
+			string inifile = prgfolder + "\\" + prgfile + ".ini";
+			string logfile = prgfolder + "\\" + prgfile + ".log";
 			var src = new StringBuilder(255);
 			var dst = new StringBuilder(255);
 			var wildc = new StringBuilder(255);
@@ -45,8 +49,15 @@ namespace FolderMonitor
 			var overw = new StringBuilder(255);
 			var eoe = new StringBuilder(255);
 			var log = new StringBuilder(255);
+			var waitt = new StringBuilder(255);
 
 			// Read INI file
+			if(!File.Exists(inifile))
+			{
+				Console.WriteLine("Error: Configuration file [" + inifile + "] not found.");
+				Environment.Exit(1);
+			}
+
 			GetPrivateProfileString(prgfile, "SourceFolder", "", src, 255, inifile);
 			GetPrivateProfileString(prgfile, "DestinationFolder", "", dst, 255, inifile);
 			GetPrivateProfileString(prgfile, "Wildcard", "", wildc, 255, inifile);
@@ -55,17 +66,14 @@ namespace FolderMonitor
 			GetPrivateProfileString(prgfile, "Overwrite", "", overw, 255, inifile);
 			GetPrivateProfileString(prgfile, "Log", "", log, 255, inifile);
 			GetPrivateProfileString(prgfile, "ExitOnError", "", eoe, 255, inifile);
+			GetPrivateProfileString(prgfile, "WaitTime", "", waitt, 255, inifile);
 
 			// Hide window if not in debug mode
-			if(debug.ToString().ToLower() != "true")
+			if(debug.ToString().ToLower() == "false")
 			{
 				var handle = GetConsoleWindow();
 				ShowWindow(handle, 0);
 			}
-
-			Console.WriteLine("Folder Monitor - (C) 2024 Patrick Lambert - https://dendory.net");
-			Console.WriteLine("Provided as free software under the MIT license.");
-			Console.WriteLine("");
 
 			// Main loop
 			while(true)
@@ -118,7 +126,7 @@ namespace FolderMonitor
 						}
 					}
 				}
-				System.Threading.Thread.Sleep(5000);
+				System.Threading.Thread.Sleep(int.Parse(waitt.ToString()));
 			}
 		}
 	}
